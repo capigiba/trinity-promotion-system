@@ -1,0 +1,257 @@
+basePath: /
+definitions:
+  campaign.CreateCampaignRequest:
+    properties:
+      description:
+        type: string
+      discount:
+        type: number
+      end_date:
+        type: string
+      max_users:
+        type: integer
+      name:
+        type: string
+      start_date:
+        type: string
+    required:
+    - description
+    - discount
+    - end_date
+    - max_users
+    - name
+    - start_date
+    type: object
+  campaign.GenerateVouchersRequest:
+    properties:
+      count:
+        type: integer
+    required:
+    - count
+    type: object
+  model.Campaign:
+    properties:
+      description:
+        type: string
+      discount:
+        type: number
+      end_date:
+        type: string
+      id:
+        type: string
+      max_users:
+        type: integer
+      name:
+        type: string
+      start_date:
+        type: string
+      used_users:
+        type: integer
+    type: object
+  model.Purchase:
+    properties:
+      amount:
+        type: number
+      discount:
+        type: number
+      id:
+        type: string
+      purchase_date:
+        type: string
+      subscription_id:
+        type: string
+      total:
+        type: number
+      user_id:
+        type: string
+      voucher_code:
+        type: string
+    type: object
+  model.SubscriptionPlan:
+    enum:
+    - silver
+    - gold
+    type: string
+    x-enum-varnames:
+    - PlanSilver
+    - PlanGold
+  model.Voucher:
+    properties:
+      campaign_id:
+        type: string
+      code:
+        type: string
+      expiry_date:
+        type: string
+      id:
+        type: string
+      used:
+        type: boolean
+      user_id:
+        type: string
+    type: object
+  purchase.ProcessPurchaseRequest:
+    properties:
+      plan:
+        $ref: '#/definitions/model.SubscriptionPlan'
+      user_id:
+        type: string
+      voucher_code:
+        type: string
+    required:
+    - plan
+    - user_id
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  voucher.RedeemVoucherRequest:
+    properties:
+      code:
+        type: string
+      user_id:
+        type: string
+    required:
+    - code
+    - user_id
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: giabao.vonguyen@gmail.com
+    name: API Support
+    url: http://www.capigiba.com/support
+  description: API documentation for Trinity App
+  title: Trinity App API
+  version: "1.0"
+paths:
+  /campaigns:
+    post:
+      consumes:
+      - application/json
+      description: Create a new promotional campaign
+      parameters:
+      - description: Campaign Data
+        in: body
+        name: campaign
+        required: true
+        schema:
+          $ref: '#/definitions/campaign.CreateCampaignRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Campaign'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new campaign
+      tags:
+      - Campaign
+  /campaigns/{id}/vouchers:
+    post:
+      consumes:
+      - application/json
+      description: Generate vouchers for the specified campaign
+      parameters:
+      - description: Campaign ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Number of vouchers to generate
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/campaign.GenerateVouchersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Voucher'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Generate vouchers for a campaign
+      tags:
+      - Campaign
+  /purchases:
+    post:
+      consumes:
+      - application/json
+      description: Process a subscription purchase with optional voucher code
+      parameters:
+      - description: Purchase data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/purchase.ProcessPurchaseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Purchase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Process a subscription purchase
+      tags:
+      - Purchase
+  /vouchers/redeem:
+    post:
+      consumes:
+      - application/json
+      description: Redeem a voucher using code and user ID
+      parameters:
+      - description: Voucher redemption data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/voucher.RedeemVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Voucher'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Redeem a voucher
+      tags:
+      - Voucher
+swagger: "2.0"

@@ -1,0 +1,5 @@
+error:
+  invalid_request_format: "Invalid request format."
+  invalid_request: "Invalid request data."
+  internal_server_error: "Internal server error."
+  invalid_token: "Invalid token."
