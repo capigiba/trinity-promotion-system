@@ -12,8 +12,9 @@ import (
 
 // Service defines campaign business logic methods
 type Service interface {
-	CreateCampaign(campaign *model.Campaign) error
+	CreateCampaign(campaign *model.Campaign) (string, error)
 	GenerateVouchers(campaignID string, count int) ([]model.Voucher, error)
+	ListCampaigns() ([]model.Campaign, error)
 }
 
 // service implements Service interface
@@ -33,20 +34,20 @@ func NewService(repo Repository, voucherRepo voucher.Repository) Service {
 }
 
 // CreateCampaign creates a new campaign
-func (s *service) CreateCampaign(campaign *model.Campaign) error {
+func (s *service) CreateCampaign(campaign *model.Campaign) (string, error) {
 	// Validate campaign dates
 	if campaign.StartDate.After(campaign.EndDate) {
-		return errors.New("start date must be before end date")
+		return "", errors.New("start date must be before end date")
 	}
 
 	// Create campaign
-	err := s.repo.CreateCampaign(campaign)
+	id, err := s.repo.CreateCampaign(campaign)
 	if err != nil {
 		s.logger.Errorf("Failed to create campaign: %v", err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 // GenerateVouchers generates vouchers for a campaign
@@ -104,4 +105,9 @@ func (s *service) generateVoucherCode() string {
 		sb.WriteByte(charset[time.Now().UnixNano()%int64(len(charset))])
 	}
 	return sb.String()
+}
+
+// ListCampaigns retrieves all campaigns
+func (s *service) ListCampaigns() ([]model.Campaign, error) {
+	return s.repo.ListCampaigns()
 }

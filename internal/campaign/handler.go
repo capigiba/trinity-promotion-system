@@ -28,6 +28,7 @@ func NewHandler(service Service) *Handler {
 // RegisterRoutes registers the campaign routes with the Gin router
 func (h *Handler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.POST("/", h.CreateCampaign)
+	rg.GET("/", h.ListCampaigns)
 	rg.POST("/:id/vouchers", h.GenerateVouchers)
 }
 
@@ -78,12 +79,14 @@ func (h *Handler) CreateCampaign(c *gin.Context) {
 		Description: req.Description,
 	}
 
-	if err := h.service.CreateCampaign(&campaign); err != nil {
+	id, err := h.service.CreateCampaign(&campaign)
+	if err != nil {
 		msg := reason.InternalServerError.Message()
 		h.logger.Errorf("%s: %v", msg, err)
 		c.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: msg})
 		return
 	}
+	campaign.Id = id
 	c.JSON(http.StatusCreated, campaign)
 }
 
@@ -127,4 +130,25 @@ func (h *Handler) GenerateVouchers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, vouchers)
+}
+
+// ListCampaigns godoc
+// @Summary List all campaigns
+// @Description Retrieve a list of all promotional campaigns
+// @Tags Campaign
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} model.Campaign
+// @Failure 500 {object} response.ErrorResponse
+// @Router /campaigns [get]
+func (h *Handler) ListCampaigns(c *gin.Context) {
+	campaigns, err := h.service.ListCampaigns()
+	if err != nil {
+		msg := reason.InternalServerError.Message()
+		h.logger.Errorf("%s: %v", msg, err)
+		c.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, campaigns)
 }

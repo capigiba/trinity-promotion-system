@@ -53,8 +53,6 @@ func (h *Handler) RedeemVoucher(c *gin.Context) {
 	}
 	voucher, err := h.service.RedeemVoucher(req.Code, req.UserId)
 	if err != nil {
-		// Depending on the error, you might want different messages
-		// For simplicity, using InvalidToken here
 		msg := reason.InvalidToken.Message()
 		h.logger.Errorf("%s: %v", msg, err)
 		c.JSON(http.StatusBadRequest, response.ErrorResponse{Error: msg})
