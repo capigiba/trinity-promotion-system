@@ -3,7 +3,7 @@ package initialize
 import (
 	"trinity/config"
 	"trinity/internal/campaign"
-	"trinity/internal/database"
+	"trinity/internal/infra/database"
 	"trinity/internal/purchase"
 	"trinity/internal/subscription"
 	"trinity/internal/voucher"
