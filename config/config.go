@@ -19,7 +19,7 @@ func LoadConfig() *Config {
 		MongoURI: getEnv("MONGO_URI", "mongodb://localhost:27017"),
 		Port:     getEnv("PORT", "8080"),
 		Language: getEnv("LANGUAGE", "en"),
-		I18NPath: getEnv("I18N_PATH", "./locales"),
+		I18NPath: getEnv("I18N_PATH", "../../locales"),
 	}
 	return AppConfig
 }
