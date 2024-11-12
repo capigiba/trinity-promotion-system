@@ -1,10 +1,11 @@
 package campaign
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 	"trinity/internal/model"
 	"trinity/internal/voucher"
 	"trinity/pkg/logger"
@@ -85,7 +86,7 @@ func (s *service) GenerateVouchers(campaignID string, count int) ([]model.Vouche
 	}
 
 	// Increment used users
-	err = s.repo.IncrementUsedUsers(campaignID)
+	err = s.repo.IncrementUsedUsers(campaignID, len(generatedVouchers))
 	if err != nil {
 		s.logger.Errorf("Failed to increment used users: %v", err)
 		return nil, err
@@ -96,15 +97,12 @@ func (s *service) GenerateVouchers(campaignID string, count int) ([]model.Vouche
 
 // generateVoucherCode generates a unique voucher code
 func (s *service) generateVoucherCode() string {
-	// Simple code generation using random strings
-	// For production, ensure uniqueness and complexity
-	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	const length = 10
-	var sb strings.Builder
-	for i := 0; i < length; i++ {
-		sb.WriteByte(charset[time.Now().UnixNano()%int64(len(charset))])
+	bytes := make([]byte, 5) // 10 characters when hex-encoded
+	if _, err := rand.Read(bytes); err != nil {
+		s.logger.Errorf("Failed to generate random bytes: %v", err)
+		return ""
 	}
-	return sb.String()
+	return strings.ToUpper(hex.EncodeToString(bytes))
 }
 
 // ListCampaigns retrieves all campaigns

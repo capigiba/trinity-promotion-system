@@ -15,7 +15,7 @@ import (
 type Repository interface {
 	CreateCampaign(campaign *model.Campaign) (string, error)
 	GetCampaignByID(id string) (*model.Campaign, error)
-	IncrementUsedUsers(id string) error
+	IncrementUsedUsers(id string, count int) error
 	ListCampaigns() ([]model.Campaign, error)
 }
 
@@ -66,13 +66,29 @@ func (r *repository) GetCampaignByID(campaignID string) (*model.Campaign, error)
 	return &campaign, nil
 }
 
-// IncrementUsedUsers increments the used_users field of a campaign
-func (r *repository) IncrementUsedUsers(id string) error {
-	_, err := r.collection.UpdateOne(context.Background(), map[string]interface{}{"_id": id},
-		map[string]interface{}{
-			"$inc": map[string]interface{}{"used_users": 1},
-		})
-	return err
+// IncrementUsedUsers increments the used_users field of a campaign by a specified count
+func (r *repository) IncrementUsedUsers(id string, count int) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("invalid campaign ID: %w", err)
+	}
+
+	update := bson.M{
+		"$inc": bson.M{
+			"used_users": count,
+		},
+	}
+
+	result, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": objID}, update)
+	if err != nil {
+		return fmt.Errorf("failed to increment used users: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		return fmt.Errorf("no campaign found with ID %s", id)
+	}
+
+	return nil
 }
 
 // ListCampaigns retrieves all campaigns from the database

@@ -42,6 +42,7 @@ func (r *repository) GetVoucherByCode(code string) (*model.Voucher, error) {
 
 // UpdateVoucher updates an existing voucher in the database
 func (r *repository) UpdateVoucher(voucher *model.Voucher) error {
+	voucher.Used = true
 	_, err := r.collection.UpdateOne(context.Background(), map[string]interface{}{"_id": voucher.Id},
 		map[string]interface{}{
 			"$set": map[string]interface{}{
